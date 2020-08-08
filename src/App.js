@@ -1,49 +1,43 @@
 import React from "react";
-import PropTypes from "prop-types"; 
+import axios from "axios";
+import Movies from "./Movie";
+import "./index.css";
 
-function Food({name, category, image}){
-  return(
-    <div>
-      <h3>I like {name} and it's {category}</h3>
-      <img src = {image} alt = {name + "image"} width = "400px"></img>
-    </div>
-  );
-}
+class App extends React.Component{
+  state = {
+    isLoading: true,
+    movies: []
+  };
 
-let myFavourite = [
-  {
-    id: 0,
-    name: "Kimchi",
-    image: "https://www.maangchi.com/wp-content/uploads/2014/06/whole-cabbage-kimchi-620x349.jpg",
-    category: "korean"
-  },
-  {
-    id: 1,
-    name: "Ramen",
-    image: "https://hips.hearstapps.com/hmg-prod/images/190208-delish-ramen-horizontal-093-1550096715.jpg",
-    category: "japanese"
-  },
-  {
-    id: 2,
-    name: "Pasta",
-    image: "https://theclevermeal.com/wp-content/uploads/2019/12/IMG_7879.jpg",
-    category: "italian"
+  getMovies = async() => {
+    let {data: {data: {movies}}} = await axios.get("https://yts.mx/api/v2/list_movies.json?sort_by=download_count");
+    this.setState({movies, isLoading: false});
   }
-];
 
-Food.propTypes = {
-  name: PropTypes.string.isRequired,
-  image: PropTypes.string.isRequired,
-  category: PropTypes.string.isRequired
-};
+  componentDidMount (){
+    this.getMovies();
+  }
 
-function App() {
-  return (
-    <div>
-      <h1>My Favourite Foods</h1>
-        {myFavourite.map(dish => <Food name = {dish.name} image = {dish.image} category = {dish.category} key = {dish.id}/>)}
-    </div>
-  );
+  render (){
+    const {isLoading, movies} = this.state;
+    
+    return <section className = "container">
+        { isLoading ? 
+        <div className = "loader">
+          <span className = "loading_text">Loading...</span>
+        </div> :
+        <div className = "movies">
+          {movies.map(movie => {
+          return <Movies 
+            key = {movie.id} 
+            title = {movie.title} 
+            poster = {movie.medium_cover_image} 
+            year = {movie.year} 
+            summary = {movie.summary}
+            genres = {movie.genres}/>})}
+        </div>}
+    </section>
+  }
 }
 
-export default App;
+export default App; 
